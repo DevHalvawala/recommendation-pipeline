@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+.venv/
+# generated data & artifacts (re-created by `python run_pipeline.py`)
+data/raw/*
+data/processed/*
+data/features/*
+!data/**/.gitkeep
+# data/errors/ and reports/ ARE committed (deliverables)
+models/*.pkl
+mlruns/
+mlflow.db
+*.log
+!reports/pipeline.log

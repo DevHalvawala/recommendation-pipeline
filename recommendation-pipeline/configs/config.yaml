@@ -1,0 +1,63 @@
+# Central configuration for the recommendation pipeline.
+# Every stage reads its settings from here -> reproducible runs.
+
+project:
+  name: recommendation-pipeline
+  seed: 42
+
+paths:
+  raw: data/raw
+  processed: data/processed
+  features: data/features
+  errors: data/errors
+  models: models
+  reports: reports
+  mlruns: mlruns
+
+data:
+  # "movielens" downloads MovieLens 100K (needs internet).
+  # "synthetic" generates a documented fake dataset (offline fallback).
+  source: movielens
+  movielens_url: https://files.grouplens.org/datasets/movielens/ml-100k.zip
+  # Inject known defects into a COPY of the raw data so the validation
+  # stage has something to catch (MovieLens itself is clean).
+  inject_errors: true
+  synthetic:
+    n_users: 600
+    n_items: 400
+    n_interactions: 30000
+
+validation:
+  rating_min: 1
+  rating_max: 5
+  # Interactions before this date or after "now" are invalid timestamps.
+  min_timestamp: "1990-01-01"
+
+preparation:
+  # Global time-based split: the last (1 - train_ratio) of the timeline is test.
+  train_ratio: 0.8
+  relevant_rating_threshold: 4   # rating >= 4 counts as "relevant" in test
+
+features:
+  top_genres_per_user: 1
+
+training:
+  popularity:
+    min_ratings: 5               # items need >= 5 train ratings to be recommended
+  svd:
+    n_factors: 30                # latent factors of the ranking (PureSVD) model
+    rating_factors: 10           # latent factors of the rating-prediction model (RMSE/MAE)
+    bias_reg: 10.0               # shrinkage of user/item biases
+  hybrid:
+    alpha: 0.7                   # weight of SVD score; (1-alpha) = genre content score
+
+evaluation:
+  k: 10
+  max_users: null                # null = evaluate every eligible test user
+  warm_users_only: true          # rank metrics only for users that have train history (cold-start count is reported)
+
+report:
+  # Shown on the title block of reports/final_report.pdf - fill these in.
+  student_name: "YOUR NAME"
+  student_id: "YOUR BITS ID"
+  github_url: "https://github.com/YOUR_USERNAME/recommendation-pipeline"
